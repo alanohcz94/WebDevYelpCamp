@@ -3,6 +3,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const methodOverride = require('method-override');
 const Campground = require('./models/campground')
+const mate = require('ejs-mate');
 
 const app = express();
 
@@ -23,8 +24,12 @@ db.once("open", () => {
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+app.engine('ejs', mate);
+
+//app.use applies it's expression to every request
 app.use(express.urlencoded({extended:true}));
 app.use(methodOverride('_method'));
+
 
 app.delete('/campgrounds/:id', async (req, res) => {
     const { id } = req.params;
