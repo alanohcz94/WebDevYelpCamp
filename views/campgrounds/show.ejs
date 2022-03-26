@@ -1,6 +1,6 @@
 <% layout('layout/viewTemplates') %>
 <div class="row">
-    <div class="col-6 offset-3">
+    <div class="col-6">
         <div class="card mb-5">
             <img src="<%= campground.image %>" class="card-img-top" alt="image_campground">
             <div class="card-body">
@@ -21,6 +21,33 @@
                 2 days ago
             </div>
         </div>
+    </div>
+    <div class="col-6">
+        <h2>Leave a Comment</h2>
+        <form action="/campgrounds/<%= campground._id%>/reviews" method="POST" class="mb-3 validated-form" novalidate>
+            <!--Make this Rating a Star instead-->
+            <div class="mb-3">
+                <label for="rating" class="form-label">Rating</label>
+                <input type="range" min="1" max="5" name="review[rating]" class="form-range" id="rating">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="review">Review</label>
+                <textarea class="form-control" name="review[body]" id="body" cols="30" rows="3" required></textarea>
+                <div class="valid-feedback">Nice !</div>
+            </div>
+            <button class="btn btn-success">Submit</button>
+        </form>
+        <% for(let review of campground.reviews) { %>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Rating: <%= review.rating %></h5>
+                    <p><span class="card-title">Review: </span><%= review.body %></p>
+                    <form action="/campgrounds/<%= campground._id%>/reviews/<%= review._id%>?_method=DELETE " method="POST">
+                        <button class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        <% } %>
     </div>
 </div>
     

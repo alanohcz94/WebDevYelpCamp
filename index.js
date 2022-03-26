@@ -6,7 +6,8 @@ const mate = require('ejs-mate');
 const ErrorHandler = require('./utils/error');
 const HelperFunction = require('./utils/helperFunctions');
 const mongoose = require('mongoose');
-const { joiSchema } = require('./validatorSchema');
+const { joiCampgroundSchema, joiReviewSchema } = require('./validatorSchema');
+const Review = require('./models/review');
 
 const helper = new HelperFunction();
 
@@ -35,8 +36,8 @@ app.engine('ejs', mate);
 app.use(express.urlencoded({extended:true}));
 app.use(methodOverride('_method'));
 
-const validatorHelper = (req,res,next) => {
-    const { error } = joiSchema.validate(req.body);
+const validatorHelperCampground = (req,res,next) => {
+    const { error } = joiCampgroundSchema.validate(req.body);
     if(error)
     {
         const eMsg = error.details.map(el => el.message).join(',');
@@ -49,17 +50,49 @@ const validatorHelper = (req,res,next) => {
     }
 }
 
+const validateHelperReview = (req,res,next) =>{
+    const { error } = joiReviewSchema.validate(req.body);
+    if(error)
+    {
+        const eMsg = error.details.map(el => el.message).join(',');
+        console.log(eMsg);
+        throw new ErrorHandler(400, eMsg);
+    }
+    else
+    {
+        next();
+    }
+}
+
+app.post('/campgrounds/:id/reviews', validateHelperReview, helper.asyncErrorHandler(async (req, res) =>{
+    const {id} = req.params;
+    const campground = await Campground.findById(id);
+    const review = new Review(req.body.review);
+    campground.reviews.push(review);
+    await review.save();
+    await campground.save();
+    res.redirect(`/campgrounds/${campground._id}`);
+}))
+
+app.delete('/campgrounds/:id/reviews/:reviewId', helper.asyncErrorHandler(async (req, res) => {
+    const { id , reviewId } = req.params;
+    /*
+        $pull is used to pull existing array items in the specified object
+    */
+    const campground = await Campground.findByIdAndUpdate(id , {$pull:{reviews: reviewId}});
+    const review = await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/campgrounds/${campground._id}`);
+}))
 
 app.delete('/campgrounds/:id', helper.asyncErrorHandler(async (req, res) => {
     const { id } = req.params;
     const campground = await Campground.findByIdAndDelete( id );
-    // const campground = await Campground.findByIdAndRemove( id,  );
     res.redirect('/campgrounds');
 }))
 
 app.put('/campgrounds/:id', helper.asyncErrorHandler(async (req, res) => {
     const { id } = req.params;
-    const campground = await Campground.findByIdAndUpdate( id, { ...req.body.campground });
+    const campground = await Campground.findById(id);
     res.redirect(`/campgrounds/${campground._id}`);
 }))
 
@@ -72,8 +105,7 @@ app.get('/campgrounds/new', (req, res) =>{
     res.render('campgrounds/new');
 })
 
-app.post('/campgrounds', validatorHelper, helper.asyncErrorHandler(async (req, res) => {
-    
+app.post('/campgrounds', validatorHelperCampground, helper.asyncErrorHandler(async (req, res) => {
     const newCampground = new Campground(req.body.campground);
     await newCampground.save();
     res.redirect(`/campgrounds/${newCampground._id}`);
@@ -85,7 +117,7 @@ app.get('/', (req, res) => {
 })
 
 app.get('/campgrounds/:id', helper.asyncErrorHandler(async (req, res) => {
-    const campground = await Campground.findById( req.params.id );
+    const campground = await Campground.findById( req.params.id ).populate('reviews');
     res.render('campgrounds/show', { campground })
 }))
 
