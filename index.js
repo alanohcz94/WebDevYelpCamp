@@ -1,15 +1,13 @@
 const express = require('express');
 const path = require('path');
 const methodOverride = require('method-override');
-const Campground = require('./models/campground')
 const mate = require('ejs-mate');
 const ErrorHandler = require('./utils/error');
-const HelperFunction = require('./utils/helperFunctions');
 const mongoose = require('mongoose');
-const { joiCampgroundSchema, joiReviewSchema } = require('./validatorSchema');
-const Review = require('./models/review');
-
-const helper = new HelperFunction();
+const campgrounds = require('./routes/campgrounds');
+const reviews = require('./routes/reviews');
+const session = require('express-session');
+const flash = require('connect-flash');
 
 const app = express();
 
@@ -35,98 +33,38 @@ app.engine('ejs', mate);
 //app.use applies it's expression to every request
 app.use(express.urlencoded({extended:true}));
 app.use(methodOverride('_method'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-const validatorHelperCampground = (req,res,next) => {
-    const { error } = joiCampgroundSchema.validate(req.body);
-    if(error)
-    {
-        const eMsg = error.details.map(el => el.message).join(',');
-        console.log(eMsg);
-        throw new ErrorHandler(400, eMsg);
-    }
-    else
-    {
-        next();
+const sessionConfig = { 
+    secret: 'password',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        httpOnly: true,
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
     }
 }
+app.use(session(sessionConfig));
 
-const validateHelperReview = (req,res,next) =>{
-    const { error } = joiReviewSchema.validate(req.body);
-    if(error)
-    {
-        const eMsg = error.details.map(el => el.message).join(',');
-        console.log(eMsg);
-        throw new ErrorHandler(400, eMsg);
-    }
-    else
-    {
-        next();
-    }
-}
+app.use(flash());
 
-app.post('/campgrounds/:id/reviews', validateHelperReview, helper.asyncErrorHandler(async (req, res) =>{
-    const {id} = req.params;
-    const campground = await Campground.findById(id);
-    const review = new Review(req.body.review);
-    campground.reviews.push(review);
-    await review.save();
-    await campground.save();
-    res.redirect(`/campgrounds/${campground._id}`);
-}))
+app.use((req, res, next) => {
+    res.locals.success = req.flash('success');
+    res.locals.error = req.flash('error');
+    next();
+});
 
-app.delete('/campgrounds/:id/reviews/:reviewId', helper.asyncErrorHandler(async (req, res) => {
-    const { id , reviewId } = req.params;
-    /*
-        $pull is used to pull existing array items in the specified object
-    */
-    const campground = await Campground.findByIdAndUpdate(id , {$pull:{reviews: reviewId}});
-    const review = await Review.findByIdAndDelete(reviewId);
-    res.redirect(`/campgrounds/${campground._id}`);
-}))
-
-app.delete('/campgrounds/:id', helper.asyncErrorHandler(async (req, res) => {
-    const { id } = req.params;
-    const campground = await Campground.findByIdAndDelete( id );
-    res.redirect('/campgrounds');
-}))
-
-app.put('/campgrounds/:id', helper.asyncErrorHandler(async (req, res) => {
-    const { id } = req.params;
-    const campground = await Campground.findById(id);
-    res.redirect(`/campgrounds/${campground._id}`);
-}))
-
-app.get('/campgrounds/:id/edit', helper.asyncErrorHandler(async(req, res) => {
-    const campground = await Campground.findById( req.params.id );
-    res.render('campgrounds/edit', { campground })
-}))
-
-app.get('/campgrounds/new', (req, res) =>{
-    res.render('campgrounds/new');
-})
-
-app.post('/campgrounds', validatorHelperCampground, helper.asyncErrorHandler(async (req, res) => {
-    const newCampground = new Campground(req.body.campground);
-    await newCampground.save();
-    res.redirect(`/campgrounds/${newCampground._id}`);
-}))
+app.use('/campgrounds', campgrounds);
+app.use('/campgrounds/:id/reviews', reviews);
 
 app.get('/', (req, res) => {
     console.log("at homepage");
     res.render('home');
 })
 
-app.get('/campgrounds/:id', helper.asyncErrorHandler(async (req, res) => {
-    const campground = await Campground.findById( req.params.id ).populate('reviews');
-    res.render('campgrounds/show', { campground })
-}))
-
-app.get('/campgrounds', helper.asyncErrorHandler(async (req, res) => {
-    const campgrounds = await Campground.find({});
-    res.render('campgrounds/index', { campgrounds });
-}))
-
 app.all('*', (req, res, next) => {
+    req.flash('error', "WRONG URL ?? OR SOMETHING !! PLEASE CHECK");
     next(new ErrorHandler(404, '404, PAGE NOT FOUND!'));
 })
 
