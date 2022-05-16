@@ -129,7 +129,7 @@ app.post('/campgrounds/:id/reviews', validateHelperReview, helper.asyncErrorHand
     res.redirect(`/campgrounds/${campground._id}`);
 }))
 
-app.delete('/campgrounds/:id/:reviewId', helper.asyncErrorHandler(async (req, res) => {
+app.delete('/campgrounds/:id/reviews/:reviewId', helper.asyncErrorHandler(async (req, res) => {
     const { id , reviewId } = req.params;
     /*
         $pull is used to pull existing array items in the specified object
@@ -147,7 +147,6 @@ app.get('/', (req, res) => {
 })
 
 app.all('*', (req, res, next) => {
-    req.flash('error', "WRONG URL ?? OR SOMETHING !! PLEASE CHECK");
     next(new ErrorHandler(404, '404, PAGE NOT FOUND!'));
 })
 
