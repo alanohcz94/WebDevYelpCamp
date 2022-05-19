@@ -4,6 +4,7 @@ const Campground = require('../models/campground');
 const HelperFunction = require('../utils/helperFunctions');
 const ErrorHandler = require('../utils/error');
 const { joiCampgroundSchema } = require('../validatorSchema');
+const { isLoggedIn } = require('../middleware/middleware');
 
 const helper = new HelperFunction();
 
@@ -21,25 +22,25 @@ const validatorHelperCampground = (req,res,next) => {
     }
 }
 
-route.get('/new',  (req, res) =>{
+route.get('/new', isLoggedIn,  (req, res) =>{
     res.render('campgrounds/new');
 })
 
-route.delete('/:id',  helper.asyncErrorHandler(async (req, res) => {
+route.delete('/:id', isLoggedIn , helper.asyncErrorHandler(async (req, res) => {
     const { id } = req.params;
     const campground = await Campground.findByIdAndDelete( id );
     req.flash('success', 'Successfully delete campground !');
     res.redirect('/campgrounds');
 }))
 
-route.put('/:id', helper.asyncErrorHandler(async (req, res) => {
+route.put('/:id', isLoggedIn ,helper.asyncErrorHandler(async (req, res) => {
     const { id } = req.params;
     const campground = await Campground.findByIdAndUpdate(id, {...req.body.campground});
     req.flash('success', 'Successfully updated campground !');
     res.redirect(`/campgrounds/${campground._id}`);
 }))
 
-route.get('/:id' ,helper.asyncErrorHandler(async (req, res) => {
+route.get('/:id' , helper.asyncErrorHandler(async (req, res) => {
     const campground = await Campground.findById( req.params.id ).populate('reviews');
     if(!campground)
     {
@@ -49,7 +50,7 @@ route.get('/:id' ,helper.asyncErrorHandler(async (req, res) => {
     res.render('campgrounds/show', { campground })
 }))
 
-route.get('/:id/edit', helper.asyncErrorHandler(async(req, res) => {
+route.get('/:id/edit', isLoggedIn, helper.asyncErrorHandler(async(req, res) => {
     const campground = await Campground.findById( req.params.id );
     if(!campground)
     {
@@ -59,7 +60,7 @@ route.get('/:id/edit', helper.asyncErrorHandler(async(req, res) => {
     res.render('campgrounds/edit', { campground })
 }))
 
-route.post('/', validatorHelperCampground, helper.asyncErrorHandler(async (req, res) => {
+route.post('/', isLoggedIn, validatorHelperCampground, helper.asyncErrorHandler(async (req, res) => {
     const newCampground = new Campground(req.body.campground);
     await newCampground.save();
     req.flash('success', 'Successfully create a campground !');

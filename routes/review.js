@@ -6,6 +6,7 @@ const HelperFunction = require('../utils/helperFunctions');
 const ErrorHandler = require('../utils/error');
 const { joiReviewSchema } = require('../validatorSchema');
 const flash = require('connect-flash');
+const { isLoggedIn } = require('../middleware/middleware');
 
 const helper = new HelperFunction();
 
@@ -23,7 +24,7 @@ const validateHelperReview = (req,res,next) =>{
     }
 }
 
-route.post('/', validateHelperReview, helper.asyncErrorHandler(async (req, res) =>{
+route.post('/', validateHelperReview, isLoggedIn, helper.asyncErrorHandler(async (req, res) =>{
     const campground = await Campground.findById(req.params.id);
     const review = new Review(req.body.review);
     campground.reviews.push(review);
@@ -33,7 +34,7 @@ route.post('/', validateHelperReview, helper.asyncErrorHandler(async (req, res) 
     res.redirect(`/campgrounds/${campground._id}`);
 }))
 
-route.delete('/:reviewId', helper.asyncErrorHandler(async (req, res) => {
+route.delete('/:reviewId', isLoggedIn, helper.asyncErrorHandler(async (req, res) => {
     const { id , reviewId } = req.params;
     /*
         $pull is used to pull existing array items in the specified object

@@ -2,13 +2,18 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const methodOverride = require('method-override');
-const campground = require('./routes/campground')
-const review = require('./routes/review');
 const mate = require('ejs-mate');
 const ErrorHandler = require('./utils/error');
 const app = express();
 const session = require('express-session');
 const flash = require('connect-flash');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const User = require('./models/user');
+
+const campgroundRoute = require('./routes/campground')
+const reviewRoute = require('./routes/review');
+const userRoute = require('./routes/user');
 
 /*
     Deprecated this 3 will always be set to true in Mongoose 6 and above
@@ -47,6 +52,13 @@ const sessionConfig = {
 app.use(session(sessionConfig));
 app.use(flash());
 
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser()); //storing
+passport.deserializeUser(User.deserializeUser()); //unstoring
+
 app.use((req,res,next) => {
     
     res.locals.success = req.flash('success');
@@ -54,12 +66,19 @@ app.use((req,res,next) => {
     next();
 })
 
-app.use('/campgrounds' , campground);
-app.use('/campgrounds/:id/reviews', review);
+app.use('/campgrounds' , campgroundRoute);
+app.use('/campgrounds/:id/reviews', reviewRoute);
+app.use('/', userRoute);
 
-app.get('/', (req, res) => {
+app.get('/home', (req, res) => {
     console.log("at homepage");
     res.render('home');
+})
+
+app.get('/fakeUser', async (req, res) => {
+    const user = new User({email: 'man@mail.com', username: 'man'});
+    const newUser = await User.register(user, 'man123');
+    res.send(newUser);
 })
 
 app.all('*', (req, res, next) => {
