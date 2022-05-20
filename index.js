@@ -60,7 +60,7 @@ passport.serializeUser(User.serializeUser()); //storing
 passport.deserializeUser(User.deserializeUser()); //unstoring
 
 app.use((req,res,next) => {
-    
+    res.locals.currentUser = req.user;
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
     next();
@@ -73,12 +73,6 @@ app.use('/', userRoute);
 app.get('/home', (req, res) => {
     console.log("at homepage");
     res.render('home');
-})
-
-app.get('/fakeUser', async (req, res) => {
-    const user = new User({email: 'man@mail.com', username: 'man'});
-    const newUser = await User.register(user, 'man123');
-    res.send(newUser);
 })
 
 app.all('*', (req, res, next) => {

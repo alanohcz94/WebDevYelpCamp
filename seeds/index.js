@@ -26,6 +26,7 @@ const seedDb = async ()=>{
     for(let i=0; i<10 ; i++)
     {
         const createCamp = new Campground({
+            author : '62879ca05137e122ae089195',
             title: `${seedSample(descriptors)}, ${seedSample(places)}`,
             location: `${seedSample(cities).city}, ${seedSample(cities).state}`,
             image: 'https://source.unsplash.com/collection/483251',

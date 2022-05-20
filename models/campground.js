@@ -14,12 +14,11 @@ const CampgroundSchema = new Schema({
             ref: 'Review'
         }
     ],
-    owner: [
+    author:
         {
             type: Schema.Types.ObjectId,
             ref: 'User'
         }
-    ]
 });
 
 module.exports = mongoose.model('Campground', CampgroundSchema);

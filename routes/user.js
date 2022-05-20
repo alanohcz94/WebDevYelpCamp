@@ -17,9 +17,11 @@ route.post('/register', helper.asyncErrorHandler(async(req, res) => {
         const { email , username , password} = req.body;
         const user = new User({email, username});
         const newUser = await User.register(user, password);
-        console.log(newUser);
-        req.flash('success', 'Welcome to YelpCamp');
-        res.redirect('/campgrounds');
+        req.login(newUser, err => {     //passport login user after registering user
+            if(err) return next(err);
+            req.flash('success', 'Welcome to YelpCamp');
+            res.redirect('/campgrounds');
+        })
     } catch(e) {
         req.flash('error', e.message);
         res.redirect('/register');
@@ -33,7 +35,9 @@ route.get('/login', (req, res) => {
 
 route.post('/login', passport.authenticate('local', {failureFlash: true, failureRedirect: '/login'}), (req, res) => {
     req.flash('success', 'Welcome back to YelpCamp');
-    res.redirect('/campgrounds');
+    const redirectUrl = req.session.returnTo || '/campgrounds';
+    delete req.session.returnTo;
+    res.redirect(redirectUrl);
 });
 
 //logout

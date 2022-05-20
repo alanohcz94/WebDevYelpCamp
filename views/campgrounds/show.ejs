@@ -9,15 +9,18 @@
             <p class="card-text"><%= campground.description %></p>
             </div>
             <ul class="list-group list-group-flush">
-            <li class="list-group-item">$<%= campground.price %> / week</li>
-            <li class="list-group-item"><%= campground.location %></li>
+                <li class="list-group-item">$<%= campground.price %> / week</li>
+                <li class="list-group-item text-muted"><%= campground.location %></li>
+                <li class="list-group-item text-muted">Posted By: <%= campground.author.username %></li>
             </ul>
+            <% if(currentUser._id && campground.author.equals(currentUser._id)) {%>
             <div class="card-body">
                 <a href="/campgrounds/<%=campground._id%>/edit" class="card-link btn btn-info">Edit Campground</a>
                 <form action="/campgrounds/<%=campground._id%>?_method=DELETE" class="card-link btn btn-danger" method="POST">
                     <a onclick="this.parentNode.submit()">Delete Campground</a>
                 </form>
             </div>
+            <% } %>
             <div class="card-footer text-muted">
                 2 days ago
             </div>
