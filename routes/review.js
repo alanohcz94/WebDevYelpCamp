@@ -1,32 +1,17 @@
 const express = require('express');
-const route = express.Router({ mergeParams: true });
+const route = express.Router({ mergeParams: true }); 
 const Review = require('../models/review');
 const Campground = require('../models/campground');
 const HelperFunction = require('../utils/helperFunctions');
-const ErrorHandler = require('../utils/error');
-const { joiReviewSchema } = require('../validatorSchema');
 const flash = require('connect-flash');
-const { isLoggedIn } = require('../middleware/middleware');
+const { isLoggedIn, checkAuthorReview , validateHelperReview  } = require('../middleware/middleware');
 
 const helper = new HelperFunction();
-
-const validateHelperReview = (req,res,next) =>{
-    const { error } = joiReviewSchema.validate(req.body);
-    if(error)
-    {
-        const eMsg = error.details.map(el => el.message).join(',');
-        console.log(eMsg);
-        throw new ErrorHandler(400, eMsg);
-    }
-    else
-    {
-        next();
-    }
-}
 
 route.post('/', validateHelperReview, isLoggedIn, helper.asyncErrorHandler(async (req, res) =>{
     const campground = await Campground.findById(req.params.id);
     const review = new Review(req.body.review);
+    review.author = req.user._id;
     campground.reviews.push(review);
     await review.save();
     await campground.save();
@@ -34,7 +19,7 @@ route.post('/', validateHelperReview, isLoggedIn, helper.asyncErrorHandler(async
     res.redirect(`/campgrounds/${campground._id}`);
 }))
 
-route.delete('/:reviewId', isLoggedIn, helper.asyncErrorHandler(async (req, res) => {
+route.delete('/:reviewId', isLoggedIn, checkAuthorReview, helper.asyncErrorHandler(async (req, res) => {
     const { id , reviewId } = req.params;
     /*
         $pull is used to pull existing array items in the specified object
