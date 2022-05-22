@@ -1,3 +1,8 @@
+// if i am in develop use my local env file
+if(process.env.NODE_EW !== 'production'){
+    require('dotenv').config();
+}
+
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');

@@ -39,8 +39,10 @@ module.exports.getCampgroundPage = async (req, res) => {
 
 module.exports.createCampground = async (req, res) => {
     const newCampground = new Campground(req.body.campground);
+    newCampground.image = req.files.map(f => ({ url: f.path, filename: f.filename }));  // implesit return save the images from the file that was stored in cloudinary a
     newCampground.author = req.user._id; //save the author to the campground
     await newCampground.save();
+    console.log(newCampground);
     req.flash('success', 'Successfully create a campground !');
     res.redirect(`/campgrounds/${newCampground._id}`);
 }

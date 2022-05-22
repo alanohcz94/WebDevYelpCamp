@@ -5,7 +5,29 @@
 <div class="row">
     <div class="col-6">
         <div class="card mb-5">
-            <img src="<%= campground.image %>" class="card-img-top" alt="image_campground">
+            <!-- Carousell -->
+            <div id="campgroundCarousel" class="carousel slide" data-ride="carousel">
+            <% counter=0; %>
+                <div class="carousel-inner"> 
+                    <% for(let img of campground.image) { %>
+                        <div class="carousel-item <%= counter === 0 ? 'active' : '' %>">
+                          <img class="d-block w-100" src="<%= img.url %>">
+                        </div>
+                        <% counter++; %>
+                    <% } %>
+                </div>
+                <% if(counter > 1) { %>
+                    <a class="carousel-control-prev" href="#campgroundCarousel"  role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only"></span>
+                    </a>
+                    <a class="carousel-control-next" href="#campgroundCarousel"  role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only"></span>
+                  </a>
+                <% } %>
+            </div>
+            <!-- End of Carousell -->  
             <div class="card-body">
             <h5 class="card-title"><%= campground.title %></h5>
             <p class="card-text"><%= campground.description %></p>
