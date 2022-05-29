@@ -23,15 +23,28 @@ const price = Math.floor(Math.random() * 1000) + 10;
 
 const seedDb = async ()=>{
     await Campground.deleteMany({}); // delete Many auto delete everything in the current db
-    for(let i=0; i<10 ; i++)
+    for(let i=0; i<30 ; i++)
     {
         const createCamp = new Campground({
             author : '62879ca05137e122ae089195',
             title: `${seedSample(descriptors)}, ${seedSample(places)}`,
             location: `${seedSample(cities).city}, ${seedSample(cities).state}`,
-            image: 'https://source.unsplash.com/collection/483251',
+            image: [
+                {
+                  url: 'https://res.cloudinary.com/aocz1911/image/upload/v1653791616/YelpCamp/xyunioep4r5ibp18ujwf.jpg',
+                  filename: 'YelpCamp/xyunioep4r5ibp18ujwf'
+                },
+                {
+                  url: 'https://res.cloudinary.com/aocz1911/image/upload/v1653791616/YelpCamp/hgojz9mkousbjnqv4nrr.jpg',
+                  filename: 'YelpCamp/hgojz9mkousbjnqv4nrr'
+                }
+            ],
             description: 'Camping is an outdoor activity involving overnight stays away from home, either without shelter or using basic shelter such as a tent or a recreational vehicle. Typically participants leave developed areas to spend time outdoors in more natural ones in pursuit of activities providing them enjoyment or an educational experience. The night (or more) spent outdoors distinguishes camping from day-tripping, picnicking, and other similarly short-term recreational activities.',
-            price
+            price,
+            geometry: {
+                type:'Point',
+                coordinates: [-113.1331, 47.0202]
+            }
         });
         await createCamp.save();
     }

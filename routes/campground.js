@@ -13,15 +13,15 @@ const upload = multer({ storage });
 
 // Routes
 route.route('/')
-	.post(isLoggedIn, upload.array('image'), validatorHelperCampground, helper.asyncErrorHandler(campgrounds.createCampground))
 	.get(helper.asyncErrorHandler(campgrounds.index))
+	.post(isLoggedIn, upload.array('image'), validatorHelperCampground, helper.asyncErrorHandler(campgrounds.createCampground))
 
 route.get('/new', isLoggedIn, campgrounds.getNewPage);
 
 route.route('/:id')
-.delete(isLoggedIn , checkAuthor ,helper.asyncErrorHandler(campgrounds.deleteCampground))
-.put(isLoggedIn, checkAuthor ,helper.asyncErrorHandler(campgrounds.updateCampground))
-.get(helper.asyncErrorHandler(campgrounds.getCampgroundPage))
+	.delete(isLoggedIn , checkAuthor ,helper.asyncErrorHandler(campgrounds.deleteCampground))
+	.put(isLoggedIn, checkAuthor ,  upload.array('image'), helper.asyncErrorHandler(campgrounds.updateCampground))
+	.get(helper.asyncErrorHandler(campgrounds.getCampgroundPage))
 
 route.get('/:id/edit', isLoggedIn, checkAuthor, helper.asyncErrorHandler(campgrounds.getEditPage));
 
