@@ -23,7 +23,7 @@ const price = Math.floor(Math.random() * 1000) + 10;
 
 const seedDb = async ()=>{
     await Campground.deleteMany({}); // delete Many auto delete everything in the current db
-    for(let i=0; i<30 ; i++)
+    for(let i=0; i<200 ; i++)
     {
         const createCamp = new Campground({
             author : '62879ca05137e122ae089195',
@@ -43,7 +43,10 @@ const seedDb = async ()=>{
             price,
             geometry: {
                 type:'Point',
-                coordinates: [-113.1331, 47.0202]
+                coordinates: [
+                    seedSample(cities).longitude, 
+                    seedSample(cities).latitude
+                    ]
             }
         });
         await createCamp.save();

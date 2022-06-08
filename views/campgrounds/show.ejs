@@ -4,9 +4,6 @@
 <div class="row">
     <div class="col-6">
         <div class="card mb-5">
-            <!-- World Map -->
-            <div id='map' style='width: 400px; height: 300px;'></div>
-            <!-- End World Map -->
             <!-- Carousell -->
             <div id="campgroundCarousel" class="carousel slide" data-ride="carousel">
             <% counter=0; %>
@@ -54,6 +51,9 @@
     </div>
     <!-- Review Portion -->
     <div class="col-6">
+        <!-- World Map -->
+        <div id='map'></div>
+        <!-- End World Map -->
         <% if(currentUser) {%>
             <h2>Leave a Comment</h2>
             <form action="/campgrounds/<%= campground._id%>/reviews" method="POST" class="mb-3 validated-form" novalidate>

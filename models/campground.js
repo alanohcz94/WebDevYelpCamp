@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-//make schema
+//make virtual schema
 const ImageSchema = new Schema ({
     url:String,
     filename: String
@@ -10,6 +10,8 @@ const ImageSchema = new Schema ({
 ImageSchema.virtual('thumbnail').get(function(){
     return this.url.replace('/upload', '/upload/w_200');
 });
+
+const virtualOptions = { toJSON: { virtuals: true} };
 
 const CampgroundSchema = new Schema({
     title: String,
@@ -39,6 +41,11 @@ const CampgroundSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: 'User'
         }
-});
+}, virtualOptions);
+
+CampgroundSchema.virtual('properties.popUpMarkup').get(function() {
+    return `<strong><a href="/campgrounds/${this._id}">${this.title}</a></strong>\n<p>${this.description.substring(0, 20)}</p>`;
+})
+
 
 module.exports = mongoose.model('Campground', CampgroundSchema);
